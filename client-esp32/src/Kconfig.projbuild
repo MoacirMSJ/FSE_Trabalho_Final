@@ -2,13 +2,13 @@ menu "Configuração do Wifi Configuration"
 
   config ESP_WIFI_SSID
       string "WiFi SSID"
-      default "salvs_2G"
+      default ""
       help
           Nome da rede Wifi.
 
   config ESP_WIFI_PASSWORD
       string "Senha do Wifi"
-      default "jma123@jma"
+      default ""
       help
           Senha do WiFi (WPA or WPA2).
 
