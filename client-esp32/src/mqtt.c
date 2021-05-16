@@ -19,11 +19,23 @@
 #include "mqtt_client.h"
 
 #include "mqtt.h"
+#include "cJSON.h"
 
 #define TAG "MQTT"
 
 extern xSemaphoreHandle conexaoMQTTSemaphore;
 esp_mqtt_client_handle_t client;
+
+char *obtemMacAddress() {
+    uint8_t base_mac_addr[6] = {0};
+    char *macAddress = malloc(20);
+    esp_efuse_mac_get_default(base_mac_addr);
+
+    snprintf(macAddress, 20,
+             "%x:%x:%x:%x:%x:%x", base_mac_addr[0], base_mac_addr[1], base_mac_addr[2], base_mac_addr[3], base_mac_addr[4], base_mac_addr[5]);
+
+    return macAddress;
+}
 
 static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
 {
@@ -34,7 +46,13 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             xSemaphoreGive(conexaoMQTTSemaphore);
-            msg_id = esp_mqtt_client_subscribe(client, "fse2020/170080366/dispositivos/1", 0);
+            char url[100] = "fse2020/170080366/dispositivos/";
+            strcat(url, obtemMacAddress());
+            msg_id = esp_mqtt_client_subscribe(client, url, 0);
+            cJSON* data = NULL;
+            data = cJSON_CreateObject();
+            cJSON_AddStringToObject(data, "cadastro","novo dispositivo conectado");
+            mqtt_envia_mensagem(url,cJSON_Print(data));
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -69,7 +87,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 }
 
 void mqtt_start()
-{
+{   
     esp_mqtt_client_config_t mqtt_config = {
         .uri = "mqtt://test.mosquitto.org",
         .port = 1883
