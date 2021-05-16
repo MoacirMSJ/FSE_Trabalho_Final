@@ -17,16 +17,6 @@
 #include "interruption.h"
 #include "cJSON.h"
 
-#define LED 2
-#define BOTAO 0
-
-
-
-struct data {
-  char * url;
-  char * msg;
-};
-
 xSemaphoreHandle conexaoWifiSemaphore;
 xSemaphoreHandle conexaoMQTTSemaphore;
 
@@ -41,8 +31,6 @@ void conectadoWifi(void * params)
     }
   }
 }
-
-
 
 void inicia_mqtt()
 {
@@ -60,27 +48,10 @@ void inicia_mqtt()
     wifi_start();
 
     xTaskCreate(&conectadoWifi,  "Conexão ao MQTT", 4096, NULL, 1, NULL);
-    //xTaskCreate(&trataComunicacaoComServidor, "Comunicação com Broker", 4096, NULL, 1, NULL);
 }
 
 void app_main(void){
   inicia_mqtt();
-  // while(1){
-  //   printf("...\n");
-  //   vTaskDelay(5000 / portTICK_PERIOD_MS);
-  // }
-  // inicia_mqtt();
-  // ativarInerrupcaoAlarme();
-
-  // int temp = 10;
-
-  // while(temp--){
-  //   vTaskDelay(2500 / portTICK_PERIOD_MS);
-  // }
-  // //printf("----------------- Desativando interrupcao\n");
-
-  // desativarInterrupcaoAlarme();
-    
 }
 
 

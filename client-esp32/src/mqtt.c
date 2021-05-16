@@ -22,6 +22,7 @@
 
 #include "cJSON.h"
 #include "dht11.h"
+#include "diversos.h"
 
 #define TAG "MQTT"
 
@@ -111,7 +112,6 @@ void mqtt_envia_mensagem(char * topico, char * mensagem)
     ESP_LOGI(TAG, "Mesnagem enviada, ID: %d", message_id);
 }
 
-
 void trata_resposta(char *data){
 
     cJSON * json = cJSON_Parse(data);
@@ -127,21 +127,17 @@ void trata_resposta(char *data){
         break;
     case 1: 
         response = cJSON_GetObjectItem(json, "lampada");
-        printf("--------> lampada %d\n",response->valueint);
+        printf("LAMPADA %d\n",response->valueint);
+        comando_lampada(response->valueint);
         break;
     case 2: 
         response = cJSON_GetObjectItem(json, "alarme");
-        //printf("%d\n",response->valueint);
         break;
     default:
         printf("tipo indefinido\n");
         break;
     }   
 }
-
-// void comando_lampada(){
-
-// }
 
 void enviaTemperaturaHumidade()
 {
@@ -160,7 +156,6 @@ void enviaTemperaturaHumidade()
     while(true)
     {
       // pega temperatura
-      
       last_read = DHT11_read();
 
       // preparando json de envio da response
@@ -175,8 +170,7 @@ void enviaTemperaturaHumidade()
 
       vTaskDelay(2000 / portTICK_PERIOD_MS);
       free(response_temp);
-      free(response_humy);
-     
+      free(response_humy); 
     }
   }
 }
