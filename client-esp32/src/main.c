@@ -11,7 +11,6 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
-#include "dht11.h"
 
 #include "wifi.h"
 #include "mqtt.h"
@@ -21,7 +20,7 @@
 #define LED 2
 #define BOTAO 0
 
-static struct dht11_reading last_read;
+
 
 struct data {
   char * url;
@@ -43,39 +42,7 @@ void conectadoWifi(void * params)
   }
 }
 
-void trataComunicacaoComServidor(void *p)
-{
-  if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
-  {
 
-    while(true)
-    {
-      // pega temperatura
-      DHT11_init(GPIO_NUM_4);
-      last_read = DHT11_read();
-
-      // preparando json de envio da response
-      cJSON* response = NULL;
-      response = cJSON_CreateObject();
-      cJSON_AddNumberToObject(response, "temperatura", last_read.temperature);
-      cJSON_AddNumberToObject(response, "umidade", last_read.humidity);
-
-      mqtt_envia_mensagem("fse2020/170080366/dispositivos/1", cJSON_Print(response));
-
-      vTaskDelay(2000 / portTICK_PERIOD_MS);
-      //  gpio_pad_select_gpio(BOTAO);
-      //  gpio_set_direction(BOTAO, GPIO_MODE_INPUT);
-      //   gpio_pad_select_gpio(LED);
-      //   gpio_set_direction(LED, GPIO_MODE_OUTPUT);
-
-      //  gpio_set_level(LED, 1);
-      //  if(gpio_get_level(BOTAO)==1){
-      //   gpio_set_level(LED, 1);
-      //  };
-      //  gpio_set_level(LED_1, 1);
-    }
-  }
-}
 
 void inicia_mqtt()
 {

@@ -4,5 +4,7 @@
 void mqtt_start();
 void trata_resposta(char *data);
 void mqtt_envia_mensagem(char * topico, char * mensagem);
+char * formataUrl(char *finalUrl);
+void enviaTemperaturaHumidade();
 
 #endif

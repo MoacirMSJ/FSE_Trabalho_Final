@@ -1,6 +1,7 @@
 
 #include "mqtt.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -20,6 +21,7 @@
 #include "mqtt_client.h"
 
 #include "cJSON.h"
+#include "dht11.h"
 
 #define TAG "MQTT"
 
@@ -27,7 +29,7 @@ extern xSemaphoreHandle conexaoMQTTSemaphore;
 esp_mqtt_client_handle_t client;
 
 char *comodo;
-char urlComodo[100] = "fse2020/170080366/";
+char urlComodo[40] = "fse2020/170080366/";
 
 char *obtemMacAddress() {
     uint8_t base_mac_addr[6] = {0};
@@ -51,7 +53,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             xSemaphoreGive(conexaoMQTTSemaphore);
             char url[100] = "fse2020/170080366/dispositivos/";
             strcat(url, obtemMacAddress());
-            //printf("%s", url);
+            printf("%s", url);
             cJSON* data = NULL;
             data = cJSON_CreateObject();
             cJSON_AddStringToObject(data, "cadastro","novo dispositivo conectado");
@@ -121,14 +123,12 @@ void trata_resposta(char *data){
     case 0:
         response = cJSON_GetObjectItem(json, "comodo");
         strcat(urlComodo, response->valuestring);
-        // enviaTemperaturaHumidade();
-        //printf("%s\n",response->valuestring);
+        xTaskCreate(&enviaTemperaturaHumidade,  "Temperatura e humidade", 4096, NULL, 1, NULL);
         break;
     case 1: 
         response = cJSON_GetObjectItem(json, "lampada");
-        //printf("%d\n",response->valueint);
+        printf("--------> lampada %d\n",response->valueint);
         break;
-
     case 2: 
         response = cJSON_GetObjectItem(json, "alarme");
         //printf("%d\n",response->valueint);
@@ -137,4 +137,46 @@ void trata_resposta(char *data){
         printf("tipo indefinido\n");
         break;
     }   
+}
+
+// void comando_lampada(){
+
+// }
+
+void enviaTemperaturaHumidade()
+{
+    char *url_temp = calloc(65,sizeof(char));
+    char *url_humy= calloc(65,sizeof(char));
+    strcat(url_temp, urlComodo);
+    strcat(url_temp, "/temperatura");
+    strcat(url_humy, urlComodo);
+    strcat(url_humy, "/umidade");
+
+    printf("%s\n",url_temp);
+    printf("%s\n",url_humy);
+  if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
+  {
+    DHT11_init(GPIO_NUM_4);
+    while(true)
+    {
+      // pega temperatura
+      
+      last_read = DHT11_read();
+
+      // preparando json de envio da response
+      cJSON* response_temp=NULL, *response_humy= NULL;
+      response_temp = cJSON_CreateObject();
+      response_humy = cJSON_CreateObject();
+      cJSON_AddNumberToObject(response_temp, "temperatura", last_read.temperature);
+      cJSON_AddNumberToObject(response_humy, "umidade", last_read.humidity);
+
+      mqtt_envia_mensagem(url_temp, cJSON_Print(response_temp));
+      mqtt_envia_mensagem(url_humy, cJSON_Print(response_humy));
+
+      vTaskDelay(2000 / portTICK_PERIOD_MS);
+      free(response_temp);
+      free(response_humy);
+     
+    }
+  }
 }
