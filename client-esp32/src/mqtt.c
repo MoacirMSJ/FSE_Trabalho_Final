@@ -1,3 +1,5 @@
+
+#include "mqtt.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -8,23 +10,24 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "freertos/queue.h"
-
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
+#include "freertos/semphr.h"
+#include "freertos/queue.h"
 
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-#include "mqtt.h"
 #include "cJSON.h"
 
 #define TAG "MQTT"
 
 extern xSemaphoreHandle conexaoMQTTSemaphore;
 esp_mqtt_client_handle_t client;
+
+char *comodo;
+char urlComodo[100] = "fse2020/170080366/";
 
 char *obtemMacAddress() {
     uint8_t base_mac_addr[6] = {0};
@@ -48,11 +51,13 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             xSemaphoreGive(conexaoMQTTSemaphore);
             char url[100] = "fse2020/170080366/dispositivos/";
             strcat(url, obtemMacAddress());
-            msg_id = esp_mqtt_client_subscribe(client, url, 0);
+            //printf("%s", url);
             cJSON* data = NULL;
             data = cJSON_CreateObject();
             cJSON_AddStringToObject(data, "cadastro","novo dispositivo conectado");
             mqtt_envia_mensagem(url,cJSON_Print(data));
+            msg_id = esp_mqtt_client_subscribe(client, url, 0);
+
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -70,6 +75,7 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
             printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
             printf("DATA=%.*s\r\n", event->data_len, event->data);
+            trata_resposta(event->data);
             break;
         case MQTT_EVENT_ERROR:
             ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -101,4 +107,34 @@ void mqtt_envia_mensagem(char * topico, char * mensagem)
 {
     int message_id = esp_mqtt_client_publish(client, topico, mensagem, 0, 1, 0);
     ESP_LOGI(TAG, "Mesnagem enviada, ID: %d", message_id);
+}
+
+
+void trata_resposta(char *data){
+
+    cJSON * json = cJSON_Parse(data);
+
+    cJSON *response = cJSON_GetObjectItem(json, "tipo");
+
+    switch (response->valueint)
+    { 
+    case 0:
+        response = cJSON_GetObjectItem(json, "comodo");
+        strcat(urlComodo, response->valuestring);
+        // enviaTemperaturaHumidade();
+        //printf("%s\n",response->valuestring);
+        break;
+    case 1: 
+        response = cJSON_GetObjectItem(json, "lampada");
+        //printf("%d\n",response->valueint);
+        break;
+
+    case 2: 
+        response = cJSON_GetObjectItem(json, "alarme");
+        //printf("%d\n",response->valueint);
+        break;
+    default:
+        printf("tipo indefinido\n");
+        break;
+    }   
 }

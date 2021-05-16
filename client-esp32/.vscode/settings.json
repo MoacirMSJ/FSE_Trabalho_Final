@@ -6,6 +6,10 @@
     "*.tsx": "typescriptreact",
     "gpio.h": "c",
     "sdkconfig.h": "c",
-    "dht11.h": "c"
+    "dht11.h": "c",
+    "task.h": "c",
+    "esp_http_client.h": "c",
+    "freertos.h": "c",
+    "esp_log.h": "c"
   }
 }

@@ -2,13 +2,13 @@ menu "Configuração do Wifi Configuration"
 
   config ESP_WIFI_SSID
       string "WiFi SSID"
-      default ""
+      default "MARIA 2G"
       help
           Nome da rede Wifi.
 
   config ESP_WIFI_PASSWORD
       string "Senha do Wifi"
-      default ""
+      default "81571376"
       help
           Senha do WiFi (WPA or WPA2).
 
