@@ -7,31 +7,8 @@
 #include "freertos/queue.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
-
-/* GPIO Example
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
-
-/**
- * Brief:
- * This test code shows how to configure gpio and how to use gpio interrupt.
- *
- * GPIO status:
- * GPIO18: output
- * GPIO19: output
- * GPIO4:  input, pulled up, interrupt from rising edge and falling edge
- * GPIO5:  input, pulled up, interrupt from rising edge.
- *
- * Test:
- * Connect GPIO18 with GPIO4
- * Connect GPIO19 with GPIO5
- * Generate pulses on GPIO18/19, that triggers interrupt on GPIO4/5
- *
- */
+#include "cJSON.h"
+#include "mqtt.h"
 
 int desativado = 0;
 
@@ -45,8 +22,8 @@ static void IRAM_ATTR gpio_isr_handler(void *args)
 
 void trataInterrupcaoBotao(void *params)
 {
+  char *url = (char*) params;
   int pino;
-  int contador = 0;
 
   while(true)
   {
@@ -63,16 +40,15 @@ void trataInterrupcaoBotao(void *params)
           vTaskDelay(50 / portTICK_PERIOD_MS);
         }
 
-        contador++;
-        printf("Os botões foram acionados %d vezes. Botão: %d\n", contador, pino);
-        // Enviar mensagem de alarme ativado usando mqtt
-        printf("------------------------------------\n");
-        printf("TAO INVADINDO A CASA, CHAMA A PULIÇA\n");
-        printf("IIIUUUUUU IIIUUUUUUU IIIUUUUUUUU IIIIIUUUUUU\n");
-
-        // Habilitar novamente a interrupção
         vTaskDelay(50 / portTICK_PERIOD_MS);
         if(!desativado){
+          printf("Alarme acionado\n");
+          cJSON* response_alarme = NULL;
+          response_alarme = cJSON_CreateObject();
+          cJSON_AddStringToObject(response_alarme,"alarme","acionado");
+          mqtt_envia_mensagem(url, cJSON_Print(response_alarme));
+
+          free(response_alarme);
             gpio_isr_handler_add(pino, gpio_isr_handler, (void *) pino);
         }
       }
@@ -81,12 +57,8 @@ void trataInterrupcaoBotao(void *params)
   }
 }
 
-
-
-void ativarInerrupcaoAlarme(){
-    desativado = 0;
-
-
+void ativarInerrupcaoAlarme(char *url_alarm){
+  desativado = 0;
   gpio_pad_select_gpio(BOTAO_1);
 
   // Configura o pino do Botão como Entrada
@@ -103,22 +75,31 @@ void ativarInerrupcaoAlarme(){
 
 
   filaDeInterrupcao = xQueueCreate(10, sizeof(int));
-  xTaskCreate(trataInterrupcaoBotao, "TrataBotao", 2048, NULL, 1, NULL);
+  xTaskCreate(trataInterrupcaoBotao, "TrataBotao", 2048, url_alarm, 1, NULL);
 
   gpio_install_isr_service(0);
   gpio_isr_handler_add(BOTAO_1, gpio_isr_handler, (void *) BOTAO_1);
 
+  cJSON* response_alarme = NULL;
+  response_alarme = cJSON_CreateObject();
+  cJSON_AddStringToObject(response_alarme,"alarme","ativado");
+  mqtt_envia_mensagem(url_alarm, cJSON_Print(response_alarme));
+  printf("Alarme ativado\n");
 
+  free(response_alarme);
 }
 
-void desativarInterrupcaoAlarme(){
-    //disable interrupt
-    printf("para alarme.\n");
-    gpio_isr_handler_remove(0);
-    gpio_intr_disable(0);
-    desativado = 1;
-    // gpio_intr_disable(0);
-    // gpio_intr_disable(0);
-    // gpio_intr_disable(0);
+void desativarInterrupcaoAlarme(char * url_alarm){
 
+  printf("para alarme.\n");
+  gpio_isr_handler_remove(0);
+  gpio_intr_disable(0);
+  desativado = 1;
+
+  cJSON* response_alarme = NULL;
+  response_alarme = cJSON_CreateObject();
+  cJSON_AddStringToObject(response_alarme,"alarme","desativado");
+  mqtt_envia_mensagem(url_alarm, cJSON_Print(response_alarme));
+  free(response_alarme);
+  printf("Alarme desativado\n");
 }

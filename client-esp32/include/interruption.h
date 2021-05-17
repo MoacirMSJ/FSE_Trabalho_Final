@@ -13,9 +13,8 @@
 gpio_config_t io_conf;
 
 
-static void IRAM_ATTR informarServidorCentral(void* arg);
-void ativarInerrupcaoAlarme();
-void desativarInterrupcaoAlarme();
+void ativarInerrupcaoAlarme(char * url);
+void desativarInterrupcaoAlarme(char * url);
 
 //https://github.com/espressif/esp-idf/blob/639e7ad494d93fc82159f9fe854041bc43a96d5f/examples/peripherals/gpio/generic_gpio/main/gpio_example_main.c
 #endif

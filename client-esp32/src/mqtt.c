@@ -23,6 +23,7 @@
 #include "cJSON.h"
 #include "dht11.h"
 #include "diversos.h"
+#include "interruption.h"
 
 #define TAG "MQTT"
 
@@ -54,10 +55,10 @@ static esp_err_t mqtt_event_handler_cb(esp_mqtt_event_handle_t event)
             xSemaphoreGive(conexaoMQTTSemaphore);
             char url[100] = "fse2020/170080366/dispositivos/";
             strcat(url, obtemMacAddress());
-            printf("%s", url);
             cJSON* data = NULL;
             data = cJSON_CreateObject();
             cJSON_AddStringToObject(data, "cadastro","novo dispositivo conectado");
+            cJSON_AddStringToObject(data, "id", obtemMacAddress());
             mqtt_envia_mensagem(url,cJSON_Print(data));
             msg_id = esp_mqtt_client_subscribe(client, url, 0);
 
@@ -132,6 +133,15 @@ void trata_resposta(char *data){
         break;
     case 2: 
         response = cJSON_GetObjectItem(json, "alarme");
+        char *url_alarme= calloc(65,sizeof(char));
+        strcat(url_alarme, urlComodo);
+        strcat(url_alarme, "/alarme");
+        if(response->valueint==1){
+            ativarInerrupcaoAlarme(url_alarme);
+        }else{
+            desativarInterrupcaoAlarme(url_alarme);
+        }
+        // free(url_alarme);
         break;
     default:
         printf("tipo indefinido\n");
@@ -148,8 +158,6 @@ void enviaTemperaturaHumidade()
     strcat(url_humy, urlComodo);
     strcat(url_humy, "/umidade");
 
-    printf("%s\n",url_temp);
-    printf("%s\n",url_humy);
   if(xSemaphoreTake(conexaoMQTTSemaphore, portMAX_DELAY))
   {
     DHT11_init(GPIO_NUM_4);
