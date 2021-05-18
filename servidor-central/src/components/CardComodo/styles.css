@@ -1,0 +1,24 @@
+.container{
+    display: flex;
+    flex-direction: column;
+    width: 100px;
+    height: 200px;
+    border-radius: 5%;
+    border-color: black;
+    border-width: 2px;
+    background-color: cornsilk;
+}
+.title{
+    color: crimson;
+    font-weight: bold;
+}
+
+h2{
+    color:dimgray;
+    font-weight: bold;
+}
+
+.sub-container{
+    display: flex;
+    flex-direction: row;
+}
