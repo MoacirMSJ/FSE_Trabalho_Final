@@ -1,19 +1,20 @@
 .container{
     display: flex;
     flex-direction: column;
-    width: 100px;
-    height: 200px;
+    align-items: center;
+    width: 300px;
+    height: 450px;
     border-radius: 5%;
     border-color: black;
+    border-style: solid;
     border-width: 2px;
-    background-color: cornsilk;
+    background-color: whitesmoke;
 }
 .title{
     color: crimson;
     font-weight: bold;
 }
-
-h2{
+.h2{
     color:dimgray;
     font-weight: bold;
 }
