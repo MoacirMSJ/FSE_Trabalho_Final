@@ -1,4 +1,3 @@
-
 #include "interruption.h"
 #include <stdio.h>
 #include <string.h>
@@ -35,10 +34,6 @@ void trataInterrupcaoBotao(void *params)
       {
 
         gpio_isr_handler_remove(pino);
-        while(gpio_get_level(pino) == estado)
-        {
-          vTaskDelay(50 / portTICK_PERIOD_MS);
-        }
 
         vTaskDelay(50 / portTICK_PERIOD_MS);
         if(!desativado){
@@ -80,13 +75,6 @@ void ativarInerrupcaoAlarme(char *url_alarm){
   gpio_install_isr_service(0);
   gpio_isr_handler_add(BOTAO_1, gpio_isr_handler, (void *) BOTAO_1);
 
-  cJSON* response_alarme = NULL;
-  response_alarme = cJSON_CreateObject();
-  cJSON_AddStringToObject(response_alarme,"alarme","ativado");
-  mqtt_envia_mensagem(url_alarm, cJSON_Print(response_alarme));
-  printf("Alarme ativado\n");
-
-  free(response_alarme);
 }
 
 void desativarInterrupcaoAlarme(char * url_alarm){
@@ -96,10 +84,5 @@ void desativarInterrupcaoAlarme(char * url_alarm){
   gpio_intr_disable(0);
   desativado = 1;
 
-  cJSON* response_alarme = NULL;
-  response_alarme = cJSON_CreateObject();
-  cJSON_AddStringToObject(response_alarme,"alarme","desativado");
-  mqtt_envia_mensagem(url_alarm, cJSON_Print(response_alarme));
-  free(response_alarme);
   printf("Alarme desativado\n");
 }
