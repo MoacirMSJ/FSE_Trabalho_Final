@@ -138,7 +138,7 @@ function CardComodo(props) {
           />
       </div>
 
-      <CSVLink  data={csvLog}>Baixar csv</CSVLink>;
+      <CSVLink  data={csvLog}>Baixar csv</CSVLink>
     </div>
     
   );

@@ -11,7 +11,7 @@ Enunciado do projeto disponivel em: https://gitlab.com/fse_fga/projetos_2020_2/t
 
 ## Sistema
 
-![screenshot1](/img/sistema.jpeg)
+![screenshot1](./img/sistema.jpeg)
 
 ### Requisitos
 
@@ -28,8 +28,8 @@ Enunciado do projeto disponivel em: https://gitlab.com/fse_fga/projetos_2020_2/t
 ### executando ESP-32
 
 ```sh
-$ git clone https://github.com/MoacirMSJ/FSE_Trabalho_Final
-$ cd client-esp32/
+$ git clone https://github.com/MoacirMSJ/FSE_Trabalho_Final.git
+$ cd FSE_Trabalho_Final/client-esp32/
 $ abrir o projeto no plataformIo
 $ mudar as configurações de wifi no arquivo src/Kconfig.projbuild
 $ executar o plataformIo build
@@ -39,8 +39,8 @@ $ executar o upload and monitor
 ### executando Servidor Central
 
 ```sh
-$ git clone https://github.com/jpcirqueira/AutomacaoResidencial
-$ cd AutomacaoResidencial/servidorCentral
+$ git clone https://github.com/MoacirMSJ/FSE_Trabalho_Final.git
+$ cd FSE_Trabalho_Final/servidor-central
 $ npm install
 $ npm start
 $ acesse http://localhost:3000/
@@ -48,11 +48,7 @@ $ acesse http://localhost:3000/
 
 ## Video 
 
-<!-- ![screenshot1](/imagens/screenshot1.jpeg) -->
-
-### Servidor Central
-
-<!-- ![cadastrar esp32](./img/cadastrar_esp32.png) -->
+[video](https://youtu.be/xj580qneWUU)
 
 
 ## Observações
