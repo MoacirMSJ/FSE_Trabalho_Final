@@ -34,8 +34,7 @@ function CardComodo(props) {
   }, []);
 
   React.useEffect(()=>{
-    console.log("lamapda")
-    console.log(lampada)
+
 
     client.publish(
       `fse2020/170080366/dispositivos/${props.id}`,
@@ -55,8 +54,6 @@ function CardComodo(props) {
   }
 
   React.useEffect(()=>{
-    console.log("alarme")
-    console.log(lampada)
 
     client.publish(
       `fse2020/170080366/dispositivos/${props.id}`,
@@ -80,7 +77,7 @@ function CardComodo(props) {
 
   const gerenciaMensagem =(topic, payload)=>{
     const m = JSON.parse(payload);
-    console.log("entrei")
+
     if(topic === `fse2020/170080366/${props.comodo}/temperatura` ){
       if(m.temperatura !== -1){
         setTemperatura(m.temperatura);

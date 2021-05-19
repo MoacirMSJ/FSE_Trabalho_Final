@@ -32,10 +32,7 @@ function App() {
     if(responseEsp.cadastro){
       setCadastro(1);
       setmacComodo(responseEsp.id)
-      console.log("mac")
-      console.log(macComodo)
-      //setComodo(prev=>[...prev, ])
-      //console.log(m.id)
+
     }
 
   }
@@ -44,9 +41,6 @@ function App() {
 
   const handleSubmit = event => {
 
-    
-    console.log("submit")
-    console.log(macComodo)
     console.log(`fse2020/170080366/dispositivos/${macComodo}`)
     
     setCadastro(0)
@@ -61,6 +55,9 @@ function App() {
 
   return (
     <>
+    {
+      macComodo===""? <h1>Aguardando...</h1>: <></>
+    }
     {
       cadatro == 1 ? 
       (
