@@ -1,5 +1,7 @@
 import React from 'react';
 import mqtt from 'mqtt';
+import { CSVLink, CSVDownload } from 'react-csv';
+import moment from "moment";
 import './styles.css'
 
 
@@ -13,16 +15,17 @@ function CardComodo(props) {
   const [estado, setEstado] =  React.useState(0);
   const [lampada, setLampada] =  React.useState(0);
   const [alarme, setAlarme] =  React.useState(0);
-
-
+  const [csvLog, setCsvLog] =  React.useState([]);
 
  const sub = ()=>{
+  setCsvLog([["Data Hora","Comando","Requisicao"]])
   client.subscribe(`fse2020/170080366/${props.comodo}/#`, 
   function (err) {
             if (!err) {
               console.log(`fse2020/170080366/${props.comodo}`)
               console.log('Conectado')}
-    })   
+    }) 
+    client.on('message',gerenciaMensagem);
  }
 
 
@@ -38,7 +41,7 @@ function CardComodo(props) {
       `fse2020/170080366/dispositivos/${props.id}`,
       `{ "tipo": 1, "lampada": ${lampada}}`
     )
-
+    setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"lampada", `${lampada}`]])
   },[lampada])
 
   const gerenciaLampada= ()=>{
@@ -52,7 +55,7 @@ function CardComodo(props) {
   }
 
   React.useEffect(()=>{
-    console.log("lamapda")
+    console.log("alarme")
     console.log(lampada)
 
     client.publish(
@@ -60,10 +63,12 @@ function CardComodo(props) {
       `{"tipo": 2, "alarme": ${alarme}}`
     )
 
+    setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"alarme", `${alarme}`]])
+
   },[alarme])
 
   const gerenciaAlarme= ()=>{
-    if(lampada == 0){
+    if(alarme == 0){
       setAlarme(1)
     }
     else{
@@ -71,36 +76,47 @@ function CardComodo(props) {
     }
   }
 
+  
+
   const gerenciaMensagem =(topic, payload)=>{
     const m = JSON.parse(payload);
+    console.log("entrei")
     if(topic === `fse2020/170080366/${props.comodo}/temperatura` ){
       if(m.temperatura !== -1){
         setTemperatura(m.temperatura);
+        
       }
+      setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"temperatura", `${m.temperatura}`]])
       
       // console("Temp: ",temperatura)
     }else if(topic === `fse2020/170080366/${props.comodo}/umidade`){
       if(m.umidade !== -1){
         setUmidade(m.umidade);  
+        
       }
-      
-      // console("umidade: ",umidade)
+      setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"umidade", `${m.umidade}`]])
     }
     else if(topic === `fse2020/170080366/${props.comodo}/estado`){
       setEstado(m.estado);
+      setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"estado", "m.estado"]])
     }
     else if(topic === `fse2020/170080366/${props.comodo}/alarme`){
-      setEstado(m.estado);
+      // setEstado(m.estado);
+      if(m.alarme === "acionado"){
+        const audio = new Audio("http://www.healthfreedomusa.org/downloads/iMovie.app/Contents/Resources/iMovie%20%2708%20Sound%20Effects/Alarm.mp3");
+        audio.play();
+        setCsvLog(prev=>[...prev,[`${moment().format("DD-MM-YYYY hh:mm:ss")}`,"alarme", "acionado"]])
+      }
+      
     }
   }
   
-  client.on('message',gerenciaMensagem);
+  
 
   return (
     <div className ='container'>
       <h1 className = "title">
           {props.comodo}
-
        </h1>
 
       <h2>Temperatura: {temperatura}°C</h2>
@@ -112,7 +128,6 @@ function CardComodo(props) {
         <input
             type="checkbox"
             defaultChecked={lampada}
-  
             onChange={gerenciaLampada}
           />
       
@@ -122,10 +137,11 @@ function CardComodo(props) {
         <input
             type="checkbox"
             defaultChecked={alarme}
-
             onChange={gerenciaAlarme}
           />
       </div>
+
+      <CSVLink  data={csvLog}>Baixar csv</CSVLink>;
     </div>
     
   );

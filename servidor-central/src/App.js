@@ -64,24 +64,23 @@ function App() {
     {
       cadatro == 1 ? 
       (
-        <div>
+        <div className="container-esp">
           <form onSubmit={handleSubmit}>
               <label>
-                <p>digite o nome do novo comodo</p>
-                <input name="comodo" onChange={(e) => setFormData(e.target.value)}/>
+                <h2>Novo dispositivo id:</h2>
+                <h2>{macComodo}</h2>
+                <input name="comodo"  placeholder="Nome do comodo" onChange={(e) => setFormData(e.target.value)}/>
               </label>
-            <button type="submit">enviar</button>
+            <button type="submit">cadastrar</button>
           </form>
         </div>
         
       ) 
       :
-      (
+      ( 
         <div className="container-comodo">
           {
-            comodo.map((comodo) => (
-                <CardComodo comodo={comodo.nome} id={comodo.id} key={comodo.id}/>
-          ))
+            comodo.map((comodo) => ( <CardComodo comodo={comodo.nome} id={comodo.id} key={comodo.id}/>))
           }
         </div>
       )
