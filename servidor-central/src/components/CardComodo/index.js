@@ -2,8 +2,8 @@ import React from 'react';
 import mqtt from 'mqtt';
 import './styles.css'
 
-const id  = 'f0:8:d1:c5:c6:e4'
 
+const client = mqtt.connect('wss://test.mosquitto.org:8081');
 function CardComodo(props) {
   console.log(props)
 
@@ -14,37 +14,61 @@ function CardComodo(props) {
   const [lampada, setLampada] =  React.useState(0);
   const [alarme, setAlarme] =  React.useState(0);
 
-  const client = mqtt.connect('wss://test.mosquitto.org:8081');
+
+
+ const sub = ()=>{
+  client.subscribe(`fse2020/170080366/${props.comodo}/#`, 
+  function (err) {
+            if (!err) {
+              console.log(`fse2020/170080366/${props.comodo}`)
+              console.log('Conectado')}
+    })   
+ }
+
 
   React.useEffect(() => {
-    
-    client.on('connect', function () { 
-      client.subscribe(`fse2020/170080366/${props.comodo}/#`, 
-          function (err) {
-                   if (!err) {
-                      console.log(`fse2020/170080366/${props.comodo}/#`)
-                      console.log('Conectado')}
-          })   
-    })
+    sub()
   }, []);
 
-  const gerenciaLampada= ()=>{
-    
-    setLampada(!Boolean(lampada))
+  React.useEffect(()=>{
+    console.log("lamapda")
+    console.log(lampada)
+
     client.publish(
-      `fse2020/170080366/dispositivos/${id}`,
-      `{ "lampada": ${lampada}}`
+      `fse2020/170080366/dispositivos/${props.id}`,
+      `{ "tipo": 1, "lampada": ${lampada}}`
     )
-    console.log(`fse2020/170080366/dispositivos/${id}`)
+
+  },[lampada])
+
+  const gerenciaLampada= ()=>{
+    if(lampada == 0){
+      setLampada(1)
+    }
+    else{
+      setLampada(0)
+    }
+    
   }
 
-  const gerenciaAlarme= ()=>{
-    setAlarme(!Boolean(alarme))
+  React.useEffect(()=>{
+    console.log("lamapda")
+    console.log(lampada)
+
     client.publish(
-      `fse2020/170080366/dispositivos/${id}`,
-      `{ "alarme": ${alarme}}`
+      `fse2020/170080366/dispositivos/${props.id}`,
+      `{"tipo": 2, "alarme": ${alarme}}`
     )
-    console.log(`fse2020/170080366/dispositivos/${id}`)
+
+  },[alarme])
+
+  const gerenciaAlarme= ()=>{
+    if(lampada == 0){
+      setAlarme(1)
+    }
+    else{
+      setAlarme(0)
+    }
   }
 
   const gerenciaMensagem =(topic, payload)=>{
@@ -63,6 +87,9 @@ function CardComodo(props) {
       // console("umidade: ",umidade)
     }
     else if(topic === `fse2020/170080366/${props.comodo}/estado`){
+      setEstado(m.estado);
+    }
+    else if(topic === `fse2020/170080366/${props.comodo}/alarme`){
       setEstado(m.estado);
     }
   }

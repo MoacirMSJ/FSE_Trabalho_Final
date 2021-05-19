@@ -1,0 +1,5 @@
+.container-comodo{
+    display: grid;
+    grid-auto-columns: auto auto auto;
+    padding: 10px;
+}
