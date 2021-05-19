@@ -1,4 +1,4 @@
-# Projeto 2
+# Projeto final
 Repositório do projeto Final da disciplina Fundamentos de Sistemas Embarcados, UNB.
 
 Enunciado do projeto disponivel em: https://gitlab.com/fse_fga/projetos_2020_2/trabalho-final-2020-2
