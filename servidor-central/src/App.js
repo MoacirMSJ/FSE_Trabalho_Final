@@ -2,32 +2,38 @@ import React from 'react';
 import CardComodo from './components/CardComodo/index.js';
 import mqtt from 'mqtt';
 
+import './styles.css';
+
 function App() {
-  const [messages, setMessages] = React.useState({});
+  const [macComodo, setmacComodo] = React.useState("");
   const [comodo, setComodo] = React.useState([]);
   const [cadatro, setCadastro] = React.useState(0);
   const [formData, setFormData] = React.useState("");
   const client = mqtt.connect('wss://test.mosquitto.org:8081');
+ 
 
-  let auxComodo;
+  const sub = ()=>{
+    client.subscribe('fse2020/170080366/dispositivos/#', 
+    function (err) {
+              if (!err) {
+                console.log('Conectado')}
+      })   
+   }
+
 
   React.useEffect(() => {
-    setComodo([{"teste": "teste"}, {"teste": "teste"}])
-    setCadastro(1);
-    client.on('connect', function () { 
-      client.subscribe('fse2020/170080366/dispositivos/#', 
-          function (err) {
-                   if (!err) {
-                      console.log('Conectado')}
-          })   
-    })
+    sub()
   }, []);
 
   const trataCadastros =(topic, payload)=>{
+    
     const responseEsp = JSON.parse(payload)
+    console.log(responseEsp)
     if(responseEsp.cadastro){
       setCadastro(1);
-      auxComodo= {"id": responseEsp.id}
+      setmacComodo(responseEsp.id)
+      console.log("mac")
+      console.log(macComodo)
       //setComodo(prev=>[...prev, ])
       //console.log(m.id)
     }
@@ -37,39 +43,44 @@ function App() {
   client.on('message',trataCadastros);
 
   const handleSubmit = event => {
-    console.log(event.target.value)
-    console.log(formData)
-    //setCadastro(1)
+
+    
+    console.log("submit")
+    console.log(macComodo)
+    console.log(`fse2020/170080366/dispositivos/${macComodo}`)
+    
+    setCadastro(0)
+    event.preventDefault();
+    setComodo([...comodo, {"id": macComodo, "nome":formData}])
+    client.publish(
+      `fse2020/170080366/dispositivos/${macComodo}`,
+      `{ "tipo": 0, "comodo": \"${formData}\"}`
+    )
   }
 
-  const handleChange = event => {
-
-    // //setFormData(event.target.value);
-  }
 
   return (
     <>
     {
       cadatro == 1 ? 
       (
-        <div>
+        <div className="container-esp">
           <form onSubmit={handleSubmit}>
               <label>
-                <p>digite o nome do novo comodo</p>
-                <input name="comodo" onChange={(e) => setFormData(e.target.value)}/>
+                <h2>Novo dispositivo id:</h2>
+                <h2>{macComodo}</h2>
+                <input name="comodo"  placeholder="Nome do comodo" onChange={(e) => setFormData(e.target.value)}/>
               </label>
-            <button type="submit">enviar</button>
+            <button type="submit">cadastrar</button>
           </form>
         </div>
         
       ) 
       :
-      (
-        <div>
+      ( 
+        <div className="container-comodo">
           {
-            comodo.map((comodo) => (
-                <CardComodo comodo="Banheiro" key={comodo.id}/>
-          ))
+            comodo.map((comodo) => ( <CardComodo comodo={comodo.nome} id={comodo.id} key={comodo.id}/>))
           }
         </div>
       )
